@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -40,7 +44,7 @@ jobs:
     name: Build & Push
     runs-on: ubuntu-latest
     needs: lint
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
 
     steps:
       - name: Checkout
@@ -88,7 +92,7 @@ jobs:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPOSITORY }}
           tags: |
             # Short commit SHA – immutable, traceable
-            type=sha,prefix=sha-
+            type=sha,format=long,prefix=sha-
             # Branch name tag
             type=ref,event=branch
             # 'latest' only for pushes to main
@@ -110,3 +114,4 @@ jobs:
 
       - name: Image digest
         run: echo "Pushed digest ${{ steps.build_image.outputs.digest }}"
+
