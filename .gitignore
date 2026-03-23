@@ -54,3 +54,5 @@ build/
 # Large tools
 # =========================
 bfg.jar
+dvc.lock
+*.jpg
